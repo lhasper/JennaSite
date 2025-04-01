@@ -1,105 +1,268 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Required meta tags -->
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  <title>PC Rings and Things</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chaos Chess</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #111;
+      color: #eee;
+    }
+    h1 {
+      margin-top: 20px;
+      font-size: 2rem;
+    }
+    #board {
+      display: grid;
+      grid-template-columns: repeat(8, 60px);
+      grid-template-rows: repeat(8, 60px);
+      margin: 20px;
+      border: 4px solid #444;
+    }
+    .square {
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    .white {
+      background-color: #eee;
+      color: #111;
+    }
+    .black {
+      background-color: #444;
+      color: #fff;
+    }
+    .highlight {
+      border: 2px solid yellow;
+    }
+    #chaos-banner {
+      font-weight: bold;
+      color: crimson;
+      animation: blink 1s infinite;
+    }
+    @keyframes blink {
+      0% { opacity: 1; }
+      50% { opacity: 0.3; }
+      100% { opacity: 1; }
+    }
+  </style>
 </head>
 <body>
-  <!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container">
-      <a class="navbar-brand" href="#">Jewelry E-commerce</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav">
-          <li class="nav-item">
-            <a class="nav-link" href="#">Home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">Shop</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">Contact</a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-  <!-- Header -->
-<header class="bg-image text-white d-flex align-items-center" style="background-image: url('your-image-url-here.jpg'); height: 70vh;">
-    <div class="container text-center">
-      <h1>Welcome to our Jewelry E-commerce Store</h1>
-      <p>Discover our unique collection of jewelry pieces.</p>
-    </div>
-  </header>
-  <!-- Products -->
-<section class="container mt-5">
-    <h2 class="text-center mb-4">Featured Products</h2>
-    <div class="row">
-      <!-- Add your product cards here -->
-      <div class="col-md-4">
-        <div class="card mb-4">
-          <img src="product-image-url.jpg" class="card-img-top" alt="Product Name">
-          
-          <div class="card-body">
-            <h5 class="card-title">Product Name</h5>
-            <p class="card-text">Product description goes here.</p>
-            <div class="d-flex justify-content-between align-items-center">
-              <span class="price">$99.99</span>
-              <button class="btn btn-primary">Add to Cart</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      
-    </div>
-  </section>
-  <!-- Footer -->
-<footer class="bg-dark text-white py-4">
-    <div class="container">
-      <div class="row">
-        <div class="col-md-6">
-          <h4>About Us</h4>
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris at mi vitae quam commodo lacinia.</p>
-        </div>
-        <div class="col-md-3">
-          <h4>Quick Links</h4>
-          <ul class="list-unstyled">
-            <li><a href="#" class="text-white">Home</a></li>
-            <li><a href="#" class="text-white">Shop</a></li>
-            <li><a href="#" class="text-white">Contact</a></li>
-          </ul>
-        </div>
-        <div class="col-md-3">
-          <h4>Contact</h4>
-          <address>
-            1234 Jewelry Street<br>
-            New York, NY 10001<br>
-            (123) 456-7890
-          </address>
-        </div>
-      </div>
-    </div>
-  </footer>
-  
-  
-  
-  
-  <!-- Your content goes here -->
+  <h1>Chaos Chess</h1>
+  <div id="board"></div>
+  <div id="chaos-banner" style="display: none">CHAOS MODE ACTIVATED!</div>
+  <script>
+    const boardElement = document.getElementById("board");
+    const chaosBanner = document.getElementById("chaos-banner");
+    const pieces = {
+      r: "♜", n: "♞", b: "♝", q: "♛", k: "♚", p: "♟",
+      R: "♖", N: "♘", B: "♗", Q: "♕", K: "♔", P: "♙"
+    };
+    let board = [];
+    let selected = null;
+    let moveCount = 0;
 
-  <!-- Optional JavaScript -->
-  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+    function initBoard() {
+      board = [
+        ["r", "n", "b", "q", "k", "b", "n", "r"],
+        ["p", "p", "p", "p", "p", "p", "p", "p"],
+        ["", "", "", "", "", "", "", ""],
+        ["", "", "", "", "", "", "", ""],
+        ["", "", "", "", "", "", "", ""],
+        ["", "", "", "", "", "", "", ""],
+        ["P", "P", "P", "P", "P", "P", "P", "P"],
+        ["R", "N", "B", "Q", "K", "B", "N", "R"],
+      ];
+    }
+
+    function renderBoard() {
+      boardElement.innerHTML = "";
+      for (let i = 0; i < 8; i++) {
+        for (let j = 0; j < 8; j++) {
+          const square = document.createElement("div");
+          square.className = "square " + ((i + j) % 2 === 0 ? "white" : "black");
+          square.dataset.row = i;
+          square.dataset.col = j;
+          if (board[i][j]) square.innerText = pieces[board[i][j]];
+          square.onclick = () => handleSquareClick(i, j);
+          boardElement.appendChild(square);
+        }
+      }
+    }
+
+    function handleSquareClick(row, col) {
+      if (selected) {
+        const [r, c] = selected;
+        board[row][col] = board[r][c];
+        board[r][c] = "";
+        selected = null;
+        moveCount++;
+        if (moveCount % 5 === 0) triggerChaos();
+        chaosBanner.style.display = moveCount % 5 === 0 ? "block" : "none";
+      } else if (board[row][col]) {
+        selected = [row, col];
+      }
+      renderBoard();
+    }
+
+    function triggerChaos() {
+      const flatPieces = board.flat().filter(x => x);
+      const emptyBoard = Array.from({ length: 8 }, () => Array(8).fill(""));
+      while (flatPieces.length) {
+        let r = Math.floor(Math.random() * 8);
+        let c = Math.floor(Math.random() * 8);
+        if (!emptyBoard[r][c]) {
+          emptyBoard[r][c] = flatPieces.pop();
+        }
+      }
+      board = emptyBoard;
+    }
+
+    initBoard();
+    renderBoard();
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chaos Chess</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #111;
+      color: #eee;
+    }
+    h1 {
+      margin-top: 20px;
+      font-size: 2rem;
+    }
+    #board {
+      display: grid;
+      grid-template-columns: repeat(8, 60px);
+      grid-template-rows: repeat(8, 60px);
+      margin: 20px;
+      border: 4px solid #444;
+    }
+    .square {
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    .white {
+      background-color: #eee;
+      color: #111;
+    }
+    .black {
+      background-color: #444;
+      color: #fff;
+    }
+    .highlight {
+      border: 2px solid yellow;
+    }
+    #chaos-banner {
+      font-weight: bold;
+      color: crimson;
+      animation: blink 1s infinite;
+    }
+    @keyframes blink {
+      0% { opacity: 1; }
+      50% { opacity: 0.3; }
+      100% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Chaos Chess</h1>
+  <div id="board"></div>
+  <div id="chaos-banner" style="display: none">CHAOS MODE ACTIVATED!</div>
+  <script>
+    const boardElement = document.getElementById("board");
+    const chaosBanner = document.getElementById("chaos-banner");
+    const pieces = {
+      r: "♜", n: "♞", b: "♝", q: "♛", k: "♚", p: "♟",
+      R: "♖", N: "♘", B: "♗", Q: "♕", K: "♔", P: "♙"
+    };
+    let board = [];
+    let selected = null;
+    let moveCount = 0;
+
+    function initBoard() {
+      board = [
+        ["r", "n", "b", "q", "k", "b", "n", "r"],
+        ["p", "p", "p", "p", "p", "p", "p", "p"],
+        ["", "", "", "", "", "", "", ""],
+        ["", "", "", "", "", "", "", ""],
+        ["", "", "", "", "", "", "", ""],
+        ["", "", "", "", "", "", "", ""],
+        ["P", "P", "P", "P", "P", "P", "P", "P"],
+        ["R", "N", "B", "Q", "K", "B", "N", "R"],
+      ];
+    }
+
+    function renderBoard() {
+      boardElement.innerHTML = "";
+      for (let i = 0; i < 8; i++) {
+        for (let j = 0; j < 8; j++) {
+          const square = document.createElement("div");
+          square.className = "square " + ((i + j) % 2 === 0 ? "white" : "black");
+          square.dataset.row = i;
+          square.dataset.col = j;
+          if (board[i][j]) square.innerText = pieces[board[i][j]];
+          square.onclick = () => handleSquareClick(i, j);
+          boardElement.appendChild(square);
+        }
+      }
+    }
+
+    function handleSquareClick(row, col) {
+      if (selected) {
+        const [r, c] = selected;
+        board[row][col] = board[r][c];
+        board[r][c] = "";
+        selected = null;
+        moveCount++;
+        if (moveCount % 5 === 0) triggerChaos();
+        chaosBanner.style.display = moveCount % 5 === 0 ? "block" : "none";
+      } else if (board[row][col]) {
+        selected = [row, col];
+      }
+      renderBoard();
+    }
+
+    function triggerChaos() {
+      const flatPieces = board.flat().filter(x => x);
+      const emptyBoard = Array.from({ length: 8 }, () => Array(8).fill(""));
+      while (flatPieces.length) {
+        let r = Math.floor(Math.random() * 8);
+        let c = Math.floor(Math.random() * 8);
+        if (!emptyBoard[r][c]) {
+          emptyBoard[r][c] = flatPieces.pop();
+        }
+      }
+      board = emptyBoard;
+    }
+
+    initBoard();
+    renderBoard();
+  </script>
 </body>
 </html>
